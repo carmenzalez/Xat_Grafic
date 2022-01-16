@@ -20,13 +20,11 @@ public class MyClient {
                 try {
                     while((line = in.readLine()) != null) {
                         sc.println(line);
-                        //line = in.readLine();
                     }
                 } catch(IOException e) {
                     e.printStackTrace();
                 }
                 try {
-                    // close sc for writing
                     in.close();
                 } catch (IOException ex) {
                     Logger.getLogger(MyClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -42,8 +40,6 @@ public class MyClient {
                 while((line = sc.readLine()) != null) {
                     System.out.println(line);
                 }
-                // close sc for reading
-                //out.close();
             }
         }.start();
     }

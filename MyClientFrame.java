@@ -6,6 +6,7 @@ import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -19,6 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.io.IOException;
+import java.awt.event.WindowEvent;
 
 public class MyClientFrame extends JFrame implements ActionListener {
 
@@ -30,20 +32,20 @@ public class MyClientFrame extends JFrame implements ActionListener {
     private JScrollPane messageArea;
     private JScrollPane userArea;
     private JTextArea messages;
-    private String line;
+    private String line, name;
     private MySocket sc;
 
     private int key;
 
     public MyClientFrame(String adress, int port) {
 
+        sc = new MySocket(adress, port);
+
         setTitle("Chat");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setFocusable(true);
         setResizable(false);
-        //addKeyListener(new Key());
-
-        sc = new MySocket(adress, port);
+        addKeyListener(new Key());
 
         chatPane = new JPanel();
         writePane = new JPanel();
@@ -67,6 +69,7 @@ public class MyClientFrame extends JFrame implements ActionListener {
         // WRITE PANE
 
         writeArea = new JTextField();
+        writeArea.addKeyListener(new Key());
         button = new JButton("Send");
 
         button.addActionListener(this);
@@ -81,14 +84,29 @@ public class MyClientFrame extends JFrame implements ActionListener {
 
         setSize(700,500);
         setVisible(true);
+
+        // Ventana pop-up para introducir username
+        name = JOptionPane.showInputDialog(this, "Enter username: ", null);
+        if (name == null) {
+            dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+        }
+        try {
+            sc.println(name);
+        } catch(IOException ex) {
+            ex.printStackTrace();
+        }
+
+        // Para que empiece el thread de escuchar mensajes
+        button.doClick();
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (key == KeyEvent.VK_ENTER || e.getSource() == button) {
+
+        if (e.getSource() == button) {
             try {
-                if((line = writeArea.getText()) != null) {
+                if((line = writeArea.getText()) != null && !writeArea.getText().isEmpty()) {
                     sc.println(line);
-                    messages.setText(messages.getText() + "\n" + line);
+                    messages.setText(messages.getText() + "\n  " + line);
                     writeArea.setText("");
                 }
             } catch(IOException ex) {
@@ -98,11 +116,12 @@ public class MyClientFrame extends JFrame implements ActionListener {
 
         new Thread(new Runnable() {
             public void run() {
-
                 while((line = sc.readLine()) != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            messages.setText(messages.getText() + "\n" + line);
+                            if (!line.equals("Enter username: ")) {
+                                messages.setText(messages.getText() + "\n  " + line);
+                            }
                         }
                     });
                 }
@@ -110,17 +129,15 @@ public class MyClientFrame extends JFrame implements ActionListener {
         }).start();
     }
 
-    /*public class Key extends KeyAdapter {
+    public class Key extends KeyAdapter {
 
         @Override
         public void keyPressed(KeyEvent e) {
-
             key = e.getKeyCode();
-
             if (key == KeyEvent.VK_ENTER) {
-                System.out.println("hola");
+                button.doClick();
             }
         }
-    }*/
+    }
 
 }
