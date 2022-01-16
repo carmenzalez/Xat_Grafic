@@ -1,1 +1,1 @@
-# Xat_Grafic
+# Client Servidor d'un Xat. Client textual
