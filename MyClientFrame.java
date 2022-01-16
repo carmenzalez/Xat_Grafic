@@ -56,8 +56,8 @@ public class MyClientFrame extends JFrame implements ActionListener {
         // CHAT PANE
 
         usersList = new JList();
-        messages = new JTextArea(26,47);
-        messages.setFont(messages.getFont().deriveFont(12f));
+        messages = new JTextArea(19,32);
+        messages.setFont(messages.getFont().deriveFont(16f));
         messages.setEditable(false);
 
         userArea = new JScrollPane(usersList);
