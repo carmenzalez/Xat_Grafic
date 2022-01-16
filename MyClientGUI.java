@@ -10,7 +10,7 @@ public class MyClientGUI {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                client = new MyClientFrame();
+                client = new MyClientFrame(args[0], Integer.parseInt(args[1]));
             }
         });
     }
