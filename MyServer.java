@@ -57,6 +57,8 @@ public class MyServer {
                         for(MySocket bs : chm.values()) {
                             if (sc != bs) {
                                 bs.println(name + ": " + msg);
+                            } else {
+                                bs.println("*" + chm.keySet().toString() + "*");
                             }
                         }
                     }

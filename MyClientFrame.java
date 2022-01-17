@@ -1,5 +1,6 @@
 package ChatGrafic;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.BoxLayout;
@@ -28,11 +29,12 @@ public class MyClientFrame extends JFrame implements ActionListener {
     private JPanel writePane;
     private JButton button;
     private JTextField writeArea;
-    private JList usersList;
+    private JList<String> usersList;
     private JScrollPane messageArea;
     private JScrollPane userArea;
     private JTextArea messages;
-    private String line, name;
+    private String line, name, wLine;
+    private String[] usr;
     private MySocket sc;
 
     private int key;
@@ -55,7 +57,9 @@ public class MyClientFrame extends JFrame implements ActionListener {
 
         // CHAT PANE
 
-        usersList = new JList();
+        DefaultListModel<String> users = new DefaultListModel<>();
+        usersList = new JList<>(users);
+
         messages = new JTextArea(19,32);
         messages.setFont(messages.getFont().deriveFont(16f));
         messages.setEditable(false);
@@ -96,30 +100,20 @@ public class MyClientFrame extends JFrame implements ActionListener {
             ex.printStackTrace();
         }
 
-        // Para que empiece el thread de escuchar mensajes
-        button.doClick();
-    }
+        //users.addElement(name);
 
-    public void actionPerformed(ActionEvent e) {
-
-        if (e.getSource() == button) {
-            try {
-                if((line = writeArea.getText()) != null && !writeArea.getText().isEmpty()) {
-                    sc.println(line);
-                    messages.setText(messages.getText() + "\n  " + line);
-                    writeArea.setText("");
-                }
-            } catch(IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-
+        // Iniciar thread de escucha
         new Thread(new Runnable() {
             public void run() {
                 while((line = sc.readLine()) != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            if (!line.equals("Enter username: ")) {
+                            if (line.startsWith("*[") && line.endsWith("]*")) {
+                                usr = line.substring(2, line.length() - 2).split(", ");
+                                for (String n : usr) 
+                                    users.addElement(n);
+                            }
+                            else if (!line.equals("Enter username: ")) {
                                 messages.setText(messages.getText() + "\n  " + line);
                             }
                         }
@@ -127,6 +121,22 @@ public class MyClientFrame extends JFrame implements ActionListener {
                 }
             }
         }).start();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+
+        if (e.getSource() == button) {
+            try {
+                wLine = writeArea.getText();
+                if(!wLine.isEmpty()) {
+                    sc.println(wLine);
+                    messages.setText(messages.getText() + "\n  " + wLine);
+                    writeArea.setText("");
+                }
+            } catch(IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     public class Key extends KeyAdapter {
